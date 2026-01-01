@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trinity Launcher</title>
+  <style>
+    :root {
+      --bg-primary: #020617;
+      --bg-secondary: #090f20;
+      --bg-tertiary: #1e293b;
+      --text-primary: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --accent: #8b5cf6;
+      --accent-hover: #a78bfa;
+      --code-bg: #1e293b;
+      --border: #334155;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background: var(--bg-secondary);
+      padding: 1.5rem 1rem;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      position: fixed;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      z-index: 100;
+    }
+
+    .sidebar-header {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .sidebar-header h2 {
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+
+    .nav-links {
+      list-style: none;
+    }
+
+    .nav-links li {
+      margin-bottom: 0.4rem;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 0.6rem 0.8rem;
+      border-radius: 6px;
+      display: block;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: white;
+      background: var(--accent);
+    }
+
+    /* Main content */
+    .main-content {
+      flex: 1;
+      margin-left: 240px;
+      padding: 2rem;
+      max-width: 800px;
+    }
+
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: white;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      margin-bottom: 1.2rem;
+      font-size: 1.1rem;
+    }
+
+    .badges {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      text-decoration: none;
+      color: white;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+
+    section {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      margin: 1.5rem 0 1.2rem;
+      color: var(--accent);
+    }
+
+    h3 {
+      font-size: 1.4rem;
+      margin: 1.2rem 0 0.8rem;
+      color: white;
+    }
+
+    p, ul, ol {
+      margin-bottom: 1rem;
+    }
+
+    ul, ol {
+      padding-left: 1.5rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.2rem 0;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 0.7rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+
+    th {
+      background: var(--bg-tertiary);
+      font-weight: 600;
+      color: white;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    code {
+      background: var(--code-bg);
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      font-family: SFMono-Regular, Consolas, monospace;
+      font-size: 0.95em;
+    }
+
+    pre {
+      background: var(--code-bg);
+      padding: 1.1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1.2rem 0;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+
+    .note {
+      background: var(--bg-tertiary);
+      padding: 1rem;
+      border-left: 4px solid var(--accent);
+      margin: 1.2rem 0;
+      border-radius: 0 6px 6px 0;
+    }
+
+    footer {
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    /* Mobile menu button */
+    .menu-toggle {
+      display: none;
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      font-size: 1.2rem;
+      z-index: 200;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        width: 220px;
+      }
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+        padding: 1.2rem;
+      }
+      .menu-toggle {
+        display: block;
+      }
+      h1 { font-size: 1.6rem; }
+      h2 { font-size: 1.4rem; }
+      .badges {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Mobile menu toggle -->
+  <button class="menu-toggle" id="menuToggle">☰</button>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>Trinity Launcher</h2>
+    </div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#" data-section="inicio" class="active">Inicio</a></li>
+      <li><a href="#" data-section="tecnologias">Tecnologías</a></li>
+      <li><a href="#" data-section="trinchete">Trinchete</a></li>
+      <li><a href="#" data-section="trinito">Trinito</a></li>
+      <li><a href="#" data-section="compilacion">Compilación</a></li>
+      <li><a href="#" data-section="mcpelauncher">MCPelauncher</a></li>
+      <li><a href="#" data-section="flatpak">Flatpak</a></li>
+      <li><a href="#" data-section="pruebas">Pruebas</a></li>
+      <li><a href="#" data-section="licencia">Licencia</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main-content">
+    <!-- Sección Inicio -->
+    <section id="inicio" class="active">
+      <h1>🎮 Trinity Launcher</h1>
+      <p class="subtitle">Entorno gráfico modular para Minecraft Bedrock en Linux</p>
+      <p style="text-align: center; margin: 1.2rem 0;">
+        <a href="https://trinitylauncher.vercel.app/" target="_blank" style="color: var(--accent); text-decoration: underline;">Visita nuestra página web oficial</a><br>
+        para guías de instalación paso a paso.
+      </p>
+      <div class="badges">
+        <a href="https://opensource.org/licenses/BSD-3-Clause" class="badge" style="background: #2563eb;">BSD 3-Clause</a>
+        <a href="https://www.qt.io/" class="badge" style="background: #41cd52;">Qt 6</a>
+        <a href="https://github.com/Trinity-LA/Trinity-Launcher" class="badge" style="background: #181717;">GitHub</a>
+        <a href="https://flatpak.org/" class="badge" style="background: #6666ff;">Flatpak</a>
+      </div>
+      <p style="margin-top: 2rem;"><strong>Trinity Launcher</strong> es un entorno gráfico moderno y modular para ejecutar y gestionar <strong>Minecraft: Bedrock Edition</strong> en Linux. Diseñado para funcionar tanto en sistema como dentro de <strong>Flatpak</strong>, utiliza <strong>Qt6</strong> y sigue una arquitectura limpia basada en librerías separadas (<code>core</code> y <code>ui</code>).</p>
+      <p>Incluye dos aplicaciones complementarias:</p>
+      <ul>
+        <li><strong><code>trinchete</code></strong> 🚀 → <strong>Launcher principal</strong>: gestión avanzada de versiones, exportación/importación, accesos directos.</li>
+        <li><strong><code>trinito</code></strong> 📦 → <strong>Gestor de contenido</strong>: instalación, activación/desactivación y eliminación de mods, texturas, packs de desarrollo y mundos.</li>
+      </ul>
+    </section>
+
+    <!-- Sección Tecnologías -->
+    <section id="tecnologias">
+      <h2>🛠️ Tecnologías</h2>
+      <h3>Stack de desarrollo</h3>
+      <table>
+        <tr><th>Componente</th><th>Descripción</th><th>Versión</th></tr>
+        <tr><td><strong>Lenguaje</strong></td><td>C++ estándar</td><td>C++17</td></tr>
+        <tr><td><strong>Framework UI</strong></td><td>Qt Framework</td><td>Qt 6.6+</td></tr>
+        <tr><td><strong>Build System</strong></td><td>CMake</td><td>3.17+</td></tr>
+        <tr><td><strong>Compilador</strong></td><td>Clang</td><td>16+</td></tr>
+        <tr><td><strong>Empaquetado</strong></td><td>Flatpak</td><td></td></tr>
+        <tr><td><strong>Plataforma</strong></td><td>Linux (x86_64, ARM64)</td><td>glibc</td></tr>
+      </table>
+      <h3>Arquitectura modular</h3>
+      <ul>
+        <li><strong><code>TrinityCore</code></strong>: lógica de negocio (gestión de versiones, packs, lanzamiento, exportación).</li>
+        <li><strong><code>TrinityUI</code></strong>: interfaces gráficas (ventanas, diálogos, widgets).</li>
+        <li><strong>Separación clara</strong>: facilita mantenimiento, pruebas y reutilización.</li>
+      </ul>
+    </section>
+
+    <!-- Sección Trinchete -->
+    <section id="trinchete">
+      <h2>🎮 Trinchete — Interfaz del launcher</h2>
+      <h3>Barra superior</h3>
+      <ul>
+        <li><strong>+ Extraer APK</strong>: selecciona un <code>.apk</code>, le da un nombre y lo extrae con <code>mcpelauncher-extract</code>.</li>
+        <li><strong>Importar</strong>: restaura una versión guardada en <code>.tar.gz</code>.</li>
+        <li><strong>Herramientas</strong>: abre la aplicación <code>trinito</code>.</li>
+      </ul>
+      <h3>Panel derecho (versión seleccionada)</h3>
+      <ul>
+        <li><strong>JUGAR</strong>: ejecuta <code>mcpelauncher-client -dg &lt;ruta&gt;</code> y cierra el launcher.</li>
+        <li><strong>Crear Acceso Directo</strong>: genera un archivo <code>.desktop</code> en <code>~/Descargas/</code>.</li>
+        <li><strong>Editar Configuración</strong>: añade variables de entorno (ej: <code>DRI_PRIME=1</code>).</li>
+        <li><strong>Exportar</strong>: guarda la versión + sus datos en <code>.tar.gz</code>.</li>
+        <li><strong>Eliminar</strong>: borra permanentemente la versión.</li>
+      </ul>
+      <div class="note">✅ <strong>Interfaz moderna con tema oscuro y soporte para íconos</strong>.</div>
+    </section>
+
+    <!-- Sección Trinito -->
+    <section id="trinito">
+      <h2>🧰 Trinito — Gestor de Contenido</h2>
+      <table>
+        <tr><th>Pestaña</th><th>Tipo</th><th>Destino</th></tr>
+        <tr><td><strong>Mods</strong></td><td>Archivo</td><td><code>behavior_packs/</code></td></tr>
+        <tr><td><strong>Texturas</strong></td><td>Archivo</td><td><code>resource_packs/</code></td></tr>
+        <tr><td><strong>Mundos</strong></td><td><strong>Carpeta</strong></td><td><code>minecraftWorlds/</code></td></tr>
+        <tr><td><strong>Desarrollo</strong></td><td>Archivo</td><td><code>development_.../</code></td></tr>
+      </table>
+      <h3>Funcionalidades clave</h3>
+      <ul>
+        <li>✅ <strong>Habilitado</strong>: nombre normal.</li>
+        <li>⬜ <strong>Deshabilitado</strong>: renombrado a <code>.disabled</code> y comprimido.</li>
+        <li>Checkboxes interactivos, recarga y eliminación.</li>
+      </ul>
+    </section>
+
+    <!-- Sección Compilación -->
+    <section id="compilacion">
+      <h2>⚙️ Compilación e Instalación</h2>
+      <pre><code># Dar permisos
+chmod +x build.sh
+
+# Compilar e instalar
+sudo ./build.sh</code></pre>
+      <p>Instala en <code>/usr/local/bin</code> y registra el ícono y acceso directo.</p>
+      <p>Una vez instalado, ejecuta desde cualquier terminal:</p>
+      <pre><code>trinchete
+trinito</code></pre>
+    </section>
+
+    <!-- Sección MCPelauncher -->
+    <section id="mcpelauncher">
+      <h2>🔧 Mcpelauncher Requerido</h2>
+      <p>Trinity Launcher <strong>requiere</strong> los binarios de <code>mcpelauncher-client</code>, <code>mcpelauncher-extract</code> y <code>mcpelauncher-webview</code>.</p>
+      <p>Usa el fork mantenido en:  
+      <a href="https://github.com/franckey02/mcpelauncher-patch" target="_blank">https://github.com/franckey02/mcpelauncher-patch</a>  
+      (Compatible con versiones recientes de Minecraft, incluyendo <strong>1.21.131+</strong> y betas).</p>
+      <h3>Comandos para compilar</h3>
+      <pre><code>git clone https://github.com/franckey02/mcpelauncher-patch.git
+cd mcpelauncher-patch
+git checkout qt6
+git submodule update --init --recursive
+mkdir -p build
+cd build
+
+CC=clang CXX=clang++ cmake .. \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_POLICY_DEFAULT_CMP0074=NEW \
+  -DCMAKE_C_COMPILER=clang \
+  -DCMAKE_CXX_COMPILER=clang++ \
+  -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -msse4.1 -msse4.2 -mpopcnt" \
+  -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -msse4.1 -msse4.2 -mpopcnt" \
+  -Wno-dev
+
+make -j$(getconf _NPROCESSORS_ONLN)
+sudo make install</code></pre>
+    </section>
+
+    <!-- Sección Flatpak -->
+    <section id="flatpak">
+      <h2>📦 Empaquetado en Flatpak</h2>
+      <h3>Requisitos</h3>
+      <pre><code>flatpak install flathub io.qt.qtwebengine.BaseApp//6.6
+flatpak install flathub org.kde.Platform//6.6 org.kde.Sdk//6.6</code></pre>
+      <h3>Construcción</h3>
+      <pre><code>flatpak-builder --user --force-clean build-dir com.trench.trinity.launcher.json
+flatpak-builder --repo=repo --force-clean build-dir com.trench.trinity.launcher.json
+flatpak build-bundle repo trinity.flatpak com.trench.trinity.launcher
+flatpak install ./trinity.flatpak</code></pre>
+      <div class="note">✅ El manifest debe incluir <code>libevdev</code>, <code>libzip</code> y copiar <code>files/</code> a <code>/app</code>.</div>
+    </section>
+
+    <!-- Sección Pruebas -->
+    <section id="pruebas">
+      <h2>🧪 Pruebas</h2>
+      <h3>En sistema</h3>
+      <pre><code>trinchete
+trinito</code></pre>
+      <h3>En Flatpak</h3>
+      <pre><code>flatpak run com.trench.trinity.launcher
+flatpak run --command=trinito com.trench.trinity.launcher</code></pre>
+      <h3>Rutas de datos (automáticas)</h3>
+      <ul>
+        <li><strong>Flatpak</strong>: <code>~/.var/app/com.trench.trinity.launcher/data/mcpelauncher/</code></li>
+        <li><strong>Local</strong>: <code>~/.local/share/mcpelauncher/</code></li>
+      </ul>
+      <div class="note">Ambas usan <code>QStandardPaths::GenericDataLocation</code> → <strong>total compatibilidad</strong>.</div>
+    </section>
+
+    <!-- Sección Licencia -->
+    <section id="licencia">
+      <h2>📄 Licencia</h2>
+      <p>Trinity Launcher se distribuye bajo la <strong>Licencia BSD de 3 cláusulas</strong>.</p>
+      <pre style="font-size: 0.9rem; white-space: pre-wrap;">Copyright (c) 2024, Trinity Launcher Authors
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</pre>
+      <p style="margin-top: 1rem;">
+        <a href="https://opensource.org/licenses/BSD-3-Clause" target="_blank">Ver licencia completa</a>
+      </p>
+    </section>
+
+    <footer>
+      <p>Documento técnico generado en enero de 2026</p>
+      <p><a href="https://github.com/Trinity-LA/Trinity-Launcher" target="_blank">Repositorio oficial en GitHub</a></p>
+    </footer>
+  </main>
+
+  <script>
+    // Manejo de navegación
+    document.querySelectorAll('#navLinks a').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Remover clase 'active' de todos los enlaces y secciones
+        document.querySelectorAll('#navLinks a').forEach(a => a.classList.remove('active'));
+        document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+        
+        // Añadir clase 'active' al enlace y sección seleccionada
+        this.classList.add('active');
+        const sectionId = this.getAttribute('data-section');
+        document.getElementById(sectionId).classList.add('active');
+        
+        // Cerrar menú móvil
+        document.getElementById('sidebar').classList.remove('active');
+      });
+    });
+
+    // Mobile menu toggle
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('active');
+    });
+  </script>
+</body>
+</html>
