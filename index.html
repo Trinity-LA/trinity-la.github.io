@@ -1,451 +1,2236 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Trinity Launcher</title>
-  <style>
-    :root {
-      --bg-primary: #020617;
-      --bg-secondary: #090f20;
-      --bg-tertiary: #1e293b;
-      --text-primary: #e2e8f0;
-      --text-secondary: #94a3b8;
-      --accent: #8b5cf6;
-      --accent-hover: #a78bfa;
-      --code-bg: #1e293b;
-      --border: #334155;
-    }
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="Trinity Launcher is a modular launcher for Minecraft Bedrock on Linux, with Qt6 integration, version management, mods, and packaging (Flatpak, AppImage, Docker) with multiplatform support."
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="icon" href="favicon.ico" type="image/x-icon" />
+        <meta name="theme-color" content="#020617" />
+        <title>Trinity Launcher</title>
+        <style>
+            :root {
+                --bg-primary: #020617;
+                --bg-secondary: #090f20;
+                --bg-tertiary: #1e293b;
+                --text-primary: #e2e8f0;
+                --text-secondary: #94a3b8;
+                --accent: #8b5cf6;
+                --accent-hover: #a78bfa;
+                --code-bg: #1e293b;
+                --border: #334155;
+            }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
 
-    body {
-      font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-      background-color: var(--bg-primary);
-      color: var(--text-primary);
-      line-height: 1.6;
-      display: flex;
-      min-height: 100vh;
-    }
+            body {
+                font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+                background-color: var(--bg-primary);
+                color: var(--text-primary);
+                line-height: 1.6;
+                display: flex;
+                min-height: 100vh;
+            }
 
-    /* Sidebar */
-    .sidebar {
-      width: 240px;
-      background: var(--bg-secondary);
-      padding: 1.5rem 1rem;
-      border-right: 1px solid var(--border);
-      overflow-y: auto;
-      position: fixed;
-      height: 100vh;
-      top: 0;
-      left: 0;
-      z-index: 100;
-    }
+            /* SVG icon helper */
+            .ico {
+                display: inline-block;
+                width: 1em;
+                height: 1em;
+                vertical-align: -0.125em;
+                fill: currentColor;
+                flex-shrink: 0;
+            }
 
-    .sidebar-header {
-      margin-bottom: 2rem;
-      text-align: center;
-    }
+            .ico-sm {
+                width: 0.85em;
+                height: 0.85em;
+            }
+            .ico-lg {
+                width: 1.25em;
+                height: 1.25em;
+            }
 
-    .sidebar-header h2 {
-      font-size: 1.1rem;
-      color: var(--accent);
-    }
+            /* Sidebar */
+            .sidebar {
+                width: 240px;
+                background: var(--bg-secondary);
+                padding: 1.5rem 1rem;
+                border-right: 1px solid var(--border);
+                overflow-y: auto;
+                position: fixed;
+                height: 100vh;
+                top: 0;
+                left: 0;
+                z-index: 100;
+            }
 
-    .nav-links {
-      list-style: none;
-    }
+            .sidebar-header {
+                margin-bottom: 2rem;
+                text-align: center;
+            }
 
-    .nav-links li {
-      margin-bottom: 0.4rem;
-    }
+            .sidebar-header h2 {
+                font-size: 1.1rem;
+                color: var(--accent);
+            }
 
-    .nav-links a {
-      color: var(--text-secondary);
-      text-decoration: none;
-      padding: 0.6rem 0.8rem;
-      border-radius: 6px;
-      display: block;
-      transition: all 0.2s;
-      font-size: 0.95rem;
-    }
+            /* Language switcher */
+            .lang-switch {
+                display: flex;
+                justify-content: center;
+                gap: 0.5rem;
+                margin-bottom: 1.5rem;
+            }
 
-    .nav-links a:hover,
-    .nav-links a.active {
-      color: white;
-      background: var(--accent);
-    }
+            .lang-btn {
+                background: transparent;
+                border: 1px solid var(--border);
+                color: var(--text-secondary);
+                padding: 0.3rem 0.7rem;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 0.8rem;
+                font-weight: 600;
+                transition: all 0.2s;
+            }
 
-    /* Main content */
-    .main-content {
-      flex: 1;
-      margin-left: 240px;
-      padding: 2rem;
-      max-width: 800px;
-    }
+            .lang-btn:hover {
+                color: var(--text-primary);
+                border-color: var(--accent);
+            }
 
-    header {
-      margin-bottom: 2rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border);
-      text-align: center;
-    }
+            .lang-btn.active {
+                background: var(--accent);
+                border-color: var(--accent);
+                color: white;
+            }
 
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-      color: white;
-    }
+            .nav-links {
+                list-style: none;
+            }
+            .nav-links li {
+                margin-bottom: 0.4rem;
+            }
 
-    .subtitle {
-      color: var(--text-secondary);
-      margin-bottom: 1.2rem;
-      font-size: 1.1rem;
-    }
+            .nav-links a {
+                color: var(--text-secondary);
+                text-decoration: none;
+                padding: 0.6rem 0.8rem;
+                border-radius: 6px;
+                display: block;
+                transition: all 0.2s;
+                font-size: 0.95rem;
+            }
 
-    .badges {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
+            .nav-links a:hover,
+            .nav-links a.active {
+                color: white;
+                background: var(--accent);
+            }
 
-    .badge {
-      display: inline-block;
-      padding: 0.3rem 0.6rem;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      text-decoration: none;
-      color: white;
-      font-weight: 600;
-      transition: opacity 0.2s;
-    }
+            /* Main content */
+            .main-content {
+                flex: 1;
+                margin-left: 240px;
+                padding: 2rem;
+                max-width: 800px;
+            }
 
-    section {
-      display: none;
-      animation: fadeIn 0.3s ease;
-    }
+            header {
+                margin-bottom: 2rem;
+                padding-bottom: 1.5rem;
+                border-bottom: 1px solid var(--border);
+                text-align: center;
+            }
 
-    section.active {
-      display: block;
-    }
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 0.5rem;
+                color: white;
+            }
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
+            .subtitle {
+                color: var(--text-secondary);
+                margin-bottom: 1.2rem;
+                font-size: 1.1rem;
+            }
 
-    h2 {
-      font-size: 1.8rem;
-      margin: 1.5rem 0 1.2rem;
-      color: var(--accent);
-    }
+            .badges {
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                margin-top: 1rem;
+            }
 
-    h3 {
-      font-size: 1.4rem;
-      margin: 1.2rem 0 0.8rem;
-      color: white;
-    }
+            .badge {
+                display: inline-block;
+                padding: 0.3rem 0.6rem;
+                border-radius: 6px;
+                font-size: 0.85rem;
+                text-decoration: none;
+                color: white;
+                font-weight: 600;
+                transition: opacity 0.2s;
+            }
 
-    p, ul, ol {
-      margin-bottom: 1rem;
-    }
+            section {
+                display: none;
+                animation: fadeIn 0.3s ease;
+            }
+            section.active {
+                display: block;
+            }
 
-    ul, ol {
-      padding-left: 1.5rem;
-    }
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1.2rem 0;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-    }
+            h2 {
+                font-size: 1.8rem;
+                margin: 1.5rem 0 1.2rem;
+                color: var(--accent);
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
 
-    th, td {
-      padding: 0.7rem 1rem;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.95rem;
-    }
+            h3 {
+                font-size: 1.4rem;
+                margin: 1.2rem 0 0.8rem;
+                color: white;
+            }
 
-    th {
-      background: var(--bg-tertiary);
-      font-weight: 600;
-      color: white;
-    }
+            p,
+            ul,
+            ol {
+                margin-bottom: 1rem;
+            }
+            ul,
+            ol {
+                padding-left: 1.5rem;
+            }
 
-    tr:last-child td {
-      border-bottom: none;
-    }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 1.2rem 0;
+                background: var(--bg-secondary);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                overflow: hidden;
+            }
 
-    code {
-      background: var(--code-bg);
-      padding: 0.2rem 0.4rem;
-      border-radius: 4px;
-      font-family: SFMono-Regular, Consolas, monospace;
-      font-size: 0.95em;
-    }
+            th,
+            td {
+                padding: 0.7rem 1rem;
+                text-align: left;
+                border-bottom: 1px solid var(--border);
+                font-size: 0.95rem;
+            }
 
-    pre {
-      background: var(--code-bg);
-      padding: 1.1rem;
-      border-radius: 8px;
-      overflow-x: auto;
-      margin: 1.2rem 0;
-      border: 1px solid var(--border);
-      font-size: 0.95rem;
-    }
+            th {
+                background: var(--bg-tertiary);
+                font-weight: 600;
+                color: white;
+            }
 
-    .note {
-      background: var(--bg-tertiary);
-      padding: 1rem;
-      border-left: 4px solid var(--accent);
-      margin: 1.2rem 0;
-      border-radius: 0 6px 6px 0;
-    }
+            tr:last-child td {
+                border-bottom: none;
+            }
 
-    footer {
-      margin-top: 2.5rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid var(--border);
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      text-align: center;
-    }
+            code {
+                background: var(--code-bg);
+                padding: 0.2rem 0.4rem;
+                border-radius: 4px;
+                font-family: SFMono-Regular, Consolas, monospace;
+                font-size: 0.95em;
+            }
 
-    /* Mobile menu button */
-    .menu-toggle {
-      display: none;
-      position: fixed;
-      top: 1rem;
-      left: 1rem;
-      background: var(--accent);
-      color: white;
-      border: none;
-      width: 40px;
-      height: 40px;
-      border-radius: 6px;
-      font-size: 1.2rem;
-      z-index: 200;
-    }
+            pre {
+                background: var(--code-bg);
+                padding: 1.1rem;
+                border-radius: 8px;
+                overflow-x: auto;
+                margin: 1.2rem 0;
+                border: 1px solid var(--border);
+                font-size: 0.95rem;
+            }
 
-    /* Responsive */
-    @media (max-width: 900px) {
-      .sidebar {
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-        width: 220px;
-      }
-      .sidebar.active {
-        transform: translateX(0);
-      }
-      .main-content {
-        margin-left: 0;
-        padding: 1.2rem;
-      }
-      .menu-toggle {
-        display: block;
-      }
-      h1 { font-size: 1.6rem; }
-      h2 { font-size: 1.4rem; }
-      .badges {
-        justify-content: flex-start;
-      }
-    }
-  </style>
-</head>
-<body>
-  <!-- Mobile menu toggle -->
-  <button class="menu-toggle" id="menuToggle">☰</button>
+            .note {
+                background: var(--bg-tertiary);
+                padding: 1rem;
+                border-left: 4px solid var(--accent);
+                margin: 1.2rem 0;
+                border-radius: 0 6px 6px 0;
+            }
 
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <h2>Trinity Launcher</h2>
-    </div>
-    <ul class="nav-links" id="navLinks">
-      <li><a href="#" data-section="inicio" class="active">Inicio</a></li>
-      <li><a href="#" data-section="tecnologias">Tecnologías</a></li>
-      <li><a href="#" data-section="trinchete">Trinchete</a></li>
-      <li><a href="#" data-section="trinito">Trinito</a></li>
-      <li><a href="#" data-section="compilacion">Compilación</a></li>
-      <li><a href="#" data-section="mcpelauncher">MCPelauncher</a></li>
-      <li><a href="#" data-section="flatpak">Flatpak</a></li>
-      <li><a href="#" data-section="pruebas">Pruebas</a></li>
-      <li><a href="#" data-section="licencia">Licencia</a></li>
-    </ul>
-  </aside>
+            footer {
+                margin-top: 2.5rem;
+                padding-top: 1.5rem;
+                border-top: 1px solid var(--border);
+                color: var(--text-secondary);
+                font-size: 0.9rem;
+                text-align: center;
+            }
 
-  <!-- Main content -->
-  <main class="main-content">
-    <!-- Sección Inicio -->
-    <section id="inicio" class="active">
-      <h1>🎮 Trinity Launcher</h1>
-      <p class="subtitle">Entorno gráfico modular para Minecraft Bedrock en Linux</p>
-      <p style="text-align: center; margin: 1.2rem 0;">
-        <a href="https://trinitylauncher.vercel.app/" target="_blank" style="color: var(--accent); text-decoration: underline;">Visita nuestra página web oficial</a><br>
-        para guías de instalación paso a paso.
-      </p>
-      <div class="badges">
-        <a href="https://opensource.org/licenses/BSD-3-Clause" class="badge" style="background: #2563eb;">BSD 3-Clause</a>
-        <a href="https://www.qt.io/" class="badge" style="background: #41cd52;">Qt 6</a>
-        <a href="https://github.com/Trinity-LA/Trinity-Launcher" class="badge" style="background: #181717;">GitHub</a>
-        <a href="https://flatpak.org/" class="badge" style="background: #6666ff;">Flatpak</a>
-      </div>
-      <p style="margin-top: 2rem;"><strong>Trinity Launcher</strong> es un entorno gráfico moderno y modular para ejecutar y gestionar <strong>Minecraft: Bedrock Edition</strong> en Linux. Diseñado para funcionar tanto en sistema como dentro de <strong>Flatpak</strong>, utiliza <strong>Qt6</strong> y sigue una arquitectura limpia basada en librerías separadas (<code>core</code> y <code>ui</code>).</p>
-      <p>Incluye dos aplicaciones complementarias:</p>
-      <ul>
-        <li><strong><code>trinchete</code></strong> 🚀 → <strong>Launcher principal</strong>: gestión avanzada de versiones, exportación/importación, accesos directos.</li>
-        <li><strong><code>trinito</code></strong> 📦 → <strong>Gestor de contenido</strong>: instalación, activación/desactivación y eliminación de mods, texturas, packs de desarrollo y mundos.</li>
-      </ul>
-    </section>
+            /* Mobile menu button */
+            .menu-toggle {
+                display: none;
+                position: fixed;
+                top: 1rem;
+                left: 1rem;
+                background: var(--accent);
+                color: white;
+                border: none;
+                width: 40px;
+                height: 40px;
+                border-radius: 6px;
+                font-size: 1.2rem;
+                z-index: 200;
+            }
 
-    <!-- Sección Tecnologías -->
-    <section id="tecnologias">
-      <h2>🛠️ Tecnologías</h2>
-      <h3>Stack de desarrollo</h3>
-      <table>
-        <tr><th>Componente</th><th>Descripción</th><th>Versión</th></tr>
-        <tr><td><strong>Lenguaje</strong></td><td>C++ estándar</td><td>C++17</td></tr>
-        <tr><td><strong>Framework UI</strong></td><td>Qt Framework</td><td>Qt 6.6+</td></tr>
-        <tr><td><strong>Build System</strong></td><td>CMake</td><td>3.17+</td></tr>
-        <tr><td><strong>Compilador</strong></td><td>Clang</td><td>16+</td></tr>
-        <tr><td><strong>Empaquetado</strong></td><td>Flatpak</td><td></td></tr>
-        <tr><td><strong>Plataforma</strong></td><td>Linux (x86_64, ARM64)</td><td>glibc</td></tr>
-      </table>
-      <h3>Arquitectura modular</h3>
-      <ul>
-        <li><strong><code>TrinityCore</code></strong>: lógica de negocio (gestión de versiones, packs, lanzamiento, exportación).</li>
-        <li><strong><code>TrinityUI</code></strong>: interfaces gráficas (ventanas, diálogos, widgets).</li>
-        <li><strong>Separación clara</strong>: facilita mantenimiento, pruebas y reutilización.</li>
-      </ul>
-    </section>
+            /* Responsive */
+            @media (max-width: 900px) {
+                .sidebar {
+                    transform: translateX(-100%);
+                    transition: transform 0.3s ease;
+                    width: 220px;
+                }
+                .sidebar.active {
+                    transform: translateX(0);
+                }
+                .main-content {
+                    margin-left: 0;
+                    padding: 1.2rem;
+                }
+                .menu-toggle {
+                    display: block;
+                }
+                h1 {
+                    font-size: 1.6rem;
+                }
+                h2 {
+                    font-size: 1.4rem;
+                }
+                .badges {
+                    justify-content: flex-start;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Mobile menu toggle -->
+        <button
+            class="menu-toggle"
+            id="menuToggle"
+            aria-label="Toggle menu"
+            aria-expanded="false"
+            aria-controls="sidebar"
+        >
+            &#9776;
+        </button>
 
-    <!-- Sección Trinchete -->
-    <section id="trinchete">
-      <h2>🎮 Trinchete — Interfaz del launcher</h2>
-      <h3>Barra superior</h3>
-      <ul>
-        <li><strong>+ Extraer APK</strong>: selecciona un <code>.apk</code>, le da un nombre y lo extrae con <code>mcpelauncher-extract</code>.</li>
-        <li><strong>Importar</strong>: restaura una versión guardada en <code>.tar.gz</code>.</li>
-        <li><strong>Herramientas</strong>: abre la aplicación <code>trinito</code>.</li>
-      </ul>
-      <h3>Panel derecho (versión seleccionada)</h3>
-      <ul>
-        <li><strong>JUGAR</strong>: ejecuta <code>mcpelauncher-client -dg &lt;ruta&gt;</code> y cierra el launcher.</li>
-        <li><strong>Crear Acceso Directo</strong>: genera un archivo <code>.desktop</code> en <code>~/Descargas/</code>.</li>
-        <li><strong>Editar Configuración</strong>: añade variables de entorno (ej: <code>DRI_PRIME=1</code>).</li>
-        <li><strong>Exportar</strong>: guarda la versión + sus datos en <code>.tar.gz</code>.</li>
-        <li><strong>Eliminar</strong>: borra permanentemente la versión.</li>
-      </ul>
-      <div class="note">✅ <strong>Interfaz moderna con tema oscuro y soporte para íconos</strong>.</div>
-    </section>
+        <!-- Sidebar -->
+        <aside
+            class="sidebar"
+            id="sidebar"
+            role="navigation"
+            aria-label="Main menu"
+        >
+            <div class="sidebar-header">
+                <h2>Trinity Launcher</h2>
+            </div>
 
-    <!-- Sección Trinito -->
-    <section id="trinito">
-      <h2>🧰 Trinito — Gestor de Contenido</h2>
-      <table>
-        <tr><th>Pestaña</th><th>Tipo</th><th>Destino</th></tr>
-        <tr><td><strong>Mods</strong></td><td>Archivo</td><td><code>behavior_packs/</code></td></tr>
-        <tr><td><strong>Texturas</strong></td><td>Archivo</td><td><code>resource_packs/</code></td></tr>
-        <tr><td><strong>Mundos</strong></td><td><strong>Carpeta</strong></td><td><code>minecraftWorlds/</code></td></tr>
-        <tr><td><strong>Desarrollo</strong></td><td>Archivo</td><td><code>development_.../</code></td></tr>
-      </table>
-      <h3>Funcionalidades clave</h3>
-      <ul>
-        <li>✅ <strong>Habilitado</strong>: nombre normal.</li>
-        <li>⬜ <strong>Deshabilitado</strong>: renombrado a <code>.disabled</code> y comprimido.</li>
-        <li>Checkboxes interactivos, recarga y eliminación.</li>
-      </ul>
-    </section>
+            <!-- Language Switcher -->
+            <div
+                class="lang-switch"
+                role="group"
+                aria-label="Language selector"
+            >
+                <button
+                    class="lang-btn active"
+                    data-lang="en"
+                    onclick="switchLang('en')"
+                >
+                    EN
+                </button>
+                <button
+                    class="lang-btn"
+                    data-lang="es"
+                    onclick="switchLang('es')"
+                >
+                    ES
+                </button>
+            </div>
 
-    <!-- Sección Compilación -->
-    <section id="compilacion">
-      <h2>⚙️ Compilación e Instalación</h2>
-      <pre><code># Dar permisos
-chmod +x build.sh
+            <ul class="nav-links" id="navLinks">
+                <li>
+                    <a
+                        href="#"
+                        data-section="home"
+                        class="active"
+                        data-en="Home"
+                        data-es="Inicio"
+                        >Home</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="#"
+                        data-section="tech"
+                        data-en="Technologies"
+                        data-es="Tecnolog&#237;as"
+                        >Technologies</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="#"
+                        data-section="architecture"
+                        data-en="Architecture"
+                        data-es="Arquitectura"
+                        >Architecture</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="#"
+                        data-section="trinchete"
+                        data-en="Trinchete"
+                        data-es="Trinchete"
+                        >Trinchete</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="#"
+                        data-section="trinito"
+                        data-en="Trinito"
+                        data-es="Trinito"
+                        >Trinito</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="#"
+                        data-section="build"
+                        data-en="Building"
+                        data-es="Compilaci&#243;n"
+                        >Building</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="#"
+                        data-section="docker"
+                        data-en="Docker"
+                        data-es="Docker"
+                        >Docker</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="#"
+                        data-section="nix"
+                        data-en="Nix / NixOS"
+                        data-es="Nix / NixOS"
+                        >Nix / NixOS</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="#"
+                        data-section="appimage"
+                        data-en="AppImage"
+                        data-es="AppImage"
+                        >AppImage</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="#"
+                        data-section="flatpak"
+                        data-en="Flatpak"
+                        data-es="Flatpak"
+                        >Flatpak</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="#"
+                        data-section="ci"
+                        data-en="CI/CD"
+                        data-es="CI/CD"
+                        >CI/CD</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="#"
+                        data-section="translations"
+                        data-en="Translations"
+                        data-es="Traducciones"
+                        >Translations</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="#"
+                        data-section="contribute"
+                        data-en="Contribute"
+                        data-es="Contribuir"
+                        >Contribute</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="#"
+                        data-section="testing"
+                        data-en="Testing"
+                        data-es="Pruebas"
+                        >Testing</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="#"
+                        data-section="license"
+                        data-en="License"
+                        data-es="Licencia"
+                        >License</a
+                    >
+                </li>
+            </ul>
+        </aside>
 
-# Compilar e instalar
-sudo ./build.sh</code></pre>
-      <p>Instala en <code>/usr/local/bin</code> y registra el ícono y acceso directo.</p>
-      <p>Una vez instalado, ejecuta desde cualquier terminal:</p>
-      <pre><code>trinchete
-trinito</code></pre>
-    </section>
+        <!-- Main content -->
+        <main class="main-content">
+            <!-- ====== HOME ====== -->
+            <section id="home" class="active">
+                <h1>
+                    <svg
+                        class="ico ico-lg"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M3 13h1v7c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-7h1a1 1 0 0 0 .7-1.7l-9-9a1 1 0 0 0-1.4 0l-9 9A1 1 0 0 0 3 13zm7 7v-5h4v5h-4zm2-15.6 7 7V20h-3v-5c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v5H5v-8.6l7-7z"
+                        />
+                    </svg>
+                    <span data-en="Trinity Launcher" data-es="Trinity Launcher"
+                        >Trinity Launcher</span
+                    >
+                </h1>
+                <p
+                    class="subtitle"
+                    data-en="Modular graphical environment for Minecraft Bedrock on Linux"
+                    data-es="Entorno gr&#225;fico modular para Minecraft Bedrock en Linux"
+                >
+                    Modular graphical environment for Minecraft Bedrock on Linux
+                </p>
+                <p style="text-align: center; margin: 1.2rem 0">
+                    <a
+                        href="https://trinitylauncher.vercel.app/"
+                        target="_blank"
+                        style="color: var(--accent); text-decoration: underline"
+                        data-en="Visit our official website"
+                        data-es="Visita nuestra p&#225;gina web oficial"
+                        >Visit our official website</a
+                    ><br />
+                    <span
+                        data-en="for step-by-step installation guides."
+                        data-es="para gu&#237;as de instalaci&#243;n paso a paso."
+                        >for step-by-step installation guides.</span
+                    >
+                </p>
+                <div class="badges">
+                    <a
+                        href="https://opensource.org/licenses/BSD-3-Clause"
+                        class="badge"
+                        style="background: #2563eb"
+                        >BSD 3-Clause</a
+                    >
+                    <a
+                        href="https://www.qt.io/"
+                        class="badge"
+                        style="background: #41cd52"
+                        >Qt 6</a
+                    >
+                    <a
+                        href="https://github.com/Trinity-LA/Trinity-Launcher"
+                        class="badge"
+                        style="background: #181717"
+                        >GitHub</a
+                    >
+                    <a
+                        href="https://flatpak.org/"
+                        class="badge"
+                        style="background: #6666ff"
+                        >Flatpak</a
+                    >
+                    <a
+                        href="https://appimage.org/"
+                        class="badge"
+                        style="background: #ff9900"
+                        >AppImage</a
+                    >
+                    <a
+                        href="https://www.docker.com/"
+                        class="badge"
+                        style="background: #2496ed"
+                        >Docker</a
+                    >
+                </div>
+                <p style="margin-top: 2rem">
+                    <strong>Trinity Launcher</strong>
+                    <span
+                        data-en="is a modern, modular graphical environment to run and manage"
+                        data-es="es un entorno gráfico moderno y modular para ejecutar y gestionar"
+                        >is a modern, modular graphical environment to run and
+                        manage</span
+                    >
+                    <strong>Minecraft: Bedrock Edition</strong>
+                    <span
+                        data-en="on Linux, macOS and more. Designed to run natively as well as inside"
+                        data-es="en Linux, macOS y más. Diseñado para funcionar tanto en sistema como dentro de"
+                        >on Linux, macOS and more. Designed to run natively as
+                        well as inside</span
+                    >
+                    <strong>Flatpak</strong>, <strong>AppImage</strong>
+                    <span data-en="and" data-es="y">and</span>
+                    <strong>Docker</strong>,
+                    <span data-en="it uses" data-es="utiliza">it uses</span>
+                    <strong>Qt6</strong>
+                    <span
+                        data-en="and follows a clean architecture based on separated libraries"
+                        data-es="y sigue una arquitectura limpia basada en librerías separadas"
+                        >and follows a clean architecture based on separated
+                        libraries</span
+                    >
+                    (<code>TrinityCore</code>
+                    <span data-en="and" data-es="y">and</span>
+                    <code>TrinityUI</code>).
+                </p>
+                <p data-en="Key features:" data-es="Funcionalidades clave:">
+                    Key features:
+                </p>
+                <ul>
+                    <li>
+                        <strong
+                            data-en="Multi-version management"
+                            data-es="Gestión multi-versión"
+                            >Multi-version management</strong
+                        >:
+                        <span
+                            data-en="extract and organize different game versions (APKs)."
+                            data-es="extrae y organiza diferentes versiones del juego (APKs)."
+                            >extract and organize different game versions
+                            (APKs).</span
+                        >
+                    </li>
+                    <li>
+                        <strong
+                            data-en="Content Manager (Trinito)"
+                            data-es="Gestor de contenido (Trinito)"
+                            >Content Manager (Trinito)</strong
+                        >:
+                        <span
+                            data-en="centralized interface for mods, textures, shaders and worlds."
+                            data-es="interfaz centralizada para mods, texturas, shaders y mundos."
+                            >centralized interface for mods, textures, shaders
+                            and worlds.</span
+                        >
+                    </li>
+                    <li>
+                        <strong
+                            data-en="Native integration"
+                            data-es="Integración nativa"
+                            >Native integration</strong
+                        >:
+                        <span
+                            data-en="Flatpak, AppImage, Docker and local execution."
+                            data-es="soporte para Flatpak, AppImage, Docker y ejecución local."
+                            >Flatpak, AppImage, Docker and local
+                            execution.</span
+                        >
+                    </li>
+                    <li>
+                        <strong
+                            data-en="Discord Rich Presence"
+                            data-es="Discord Rich Presence"
+                            >Discord Rich Presence</strong
+                        >:
+                        <span
+                            data-en="natively implemented."
+                            data-es="integración implementada nativamente."
+                            >natively implemented.</span
+                        >
+                    </li>
+                </ul>
+            </section>
 
-    <!-- Sección MCPelauncher -->
-    <section id="mcpelauncher">
-      <h2>🔧 Mcpelauncher Requerido</h2>
-      <p>Trinity Launcher <strong>requiere</strong> los binarios de <code>mcpelauncher-client</code>, <code>mcpelauncher-extract</code> y <code>mcpelauncher-webview</code>.</p>
-      <p>Usa el fork mantenido en:  
-      <a href="https://github.com/franckey02/mcpelauncher-patch" target="_blank">https://github.com/franckey02/mcpelauncher-patch</a>  
-      (Compatible con versiones recientes de Minecraft, incluyendo <strong>1.21.131+</strong> y betas).</p>
-      <h3>Comandos para compilar</h3>
-      <pre><code>git clone https://github.com/franckey02/mcpelauncher-patch.git
-cd mcpelauncher-patch
-git checkout qt6
-git submodule update --init --recursive
-mkdir -p build
-cd build
+            <!-- ====== TECHNOLOGIES ====== -->
+            <section id="tech">
+                <h2>
+                    <svg
+                        class="ico ico-lg"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M12 2a1 1 0 0 1 1 1v2.07A7.003 7.003 0 0 1 19 12a7 7 0 0 1-7 7 7 7 0 0 1-7-7 7.003 7.003 0 0 1 6-6.93V3a1 1 0 0 1 2 0zM8 12a4 4 0 1 0 8 0 4 4 0 0 0-8 0z"
+                        />
+                    </svg>
+                    <span data-en="Technologies" data-es="Tecnolog&#237;as"
+                        >Technologies</span
+                    >
+                </h2>
+                <h3 data-en="Development Stack" data-es="Stack de desarrollo">
+                    Development Stack
+                </h3>
+                <table>
+                    <tr>
+                        <th data-en="Component" data-es="Componente">
+                            Component
+                        </th>
+                        <th data-en="Description" data-es="Descripci&#243;n">
+                            Description
+                        </th>
+                        <th data-en="Version" data-es="Versi&#243;n">
+                            Version
+                        </th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong data-en="Language" data-es="Lenguaje"
+                                >Language</strong
+                            >
+                        </td>
+                        <td data-en="Standard C++" data-es="C++ est&#225;ndar">
+                            Standard C++
+                        </td>
+                        <td>C++17</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong
+                                data-en="UI Framework"
+                                data-es="Framework UI"
+                                >UI Framework</strong
+                            >
+                        </td>
+                        <td>Qt Framework</td>
+                        <td>Qt 5 / Qt 6</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong
+                                data-en="Build System"
+                                data-es="Sistema de Build"
+                                >Build System</strong
+                            >
+                        </td>
+                        <td>CMake + Ninja</td>
+                        <td>3.17+</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong data-en="Compiler" data-es="Compilador"
+                                >Compiler</strong
+                            >
+                        </td>
+                        <td>Clang / GCC</td>
+                        <td>16+</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong data-en="Packaging" data-es="Empaquetado"
+                                >Packaging</strong
+                            >
+                        </td>
+                        <td
+                            data-en="Flatpak, AppImage, Docker"
+                            data-es="Flatpak, AppImage, Docker"
+                        >
+                            Flatpak, AppImage, Docker
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong data-en="Platform" data-es="Plataforma"
+                                >Platform</strong
+                            >
+                        </td>
+                        <td
+                            data-en="Linux (x86_64, ARM64), macOS"
+                            data-es="Linux (x86_64, ARM64), macOS"
+                        >
+                            Linux (x86_64, ARM64), macOS
+                        </td>
+                        <td>glibc</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CI/CD</strong></td>
+                        <td>GitHub Actions</td>
+                        <td></td>
+                    </tr>
+                </table>
+                <h3
+                    data-en="System Dependencies"
+                    data-es="Dependencias del sistema"
+                >
+                    System Dependencies
+                </h3>
+                <p
+                    data-en="Trinity Launcher requires a wide range of system dependencies to function correctly, including:"
+                    data-es="Trinity Launcher requiere una amplia gama de dependencias del sistema para funcionar correctamente, incluyendo:"
+                >
+                    Trinity Launcher requires a wide range of system
+                    dependencies to function correctly, including:
+                </p>
+                <ul>
+                    <li>
+                        <strong data-en="Graphics" data-es="Gr&#225;ficos"
+                            >Graphics:</strong
+                        >
+                        Mesa, Vulkan, EGL, GL, DRM, GBM, Wayland, X11
+                    </li>
+                    <li>
+                        <strong data-en="Audio" data-es="Audio">Audio:</strong>
+                        ALSA, PulseAudio, PipeWire, JACK, sndio
+                    </li>
+                    <li>
+                        <strong data-en="Input" data-es="Entrada"
+                            >Input:</strong
+                        >
+                        libevdev, libusb, libinput, X11 extensions
+                    </li>
+                    <li>
+                        <strong data-en="Network" data-es="Red"
+                            >Network:</strong
+                        >
+                        libcurl, OpenSSL, D-Bus, BlueZ
+                    </li>
+                    <li>
+                        <strong data-en="Compression" data-es="Compresi&#243;n"
+                            >Compression:</strong
+                        >
+                        libzip, libpng
+                    </li>
+                    <li>
+                        <strong
+                            data-en="Internationalization"
+                            data-es="Internacionalizaci&#243;n"
+                            >Internationalization:</strong
+                        >
+                        IBus, libxkbcommon
+                    </li>
+                </ul>
+            </section>
 
-CC=clang CXX=clang++ cmake .. \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_POLICY_DEFAULT_CMP0074=NEW \
-  -DCMAKE_C_COMPILER=clang \
-  -DCMAKE_CXX_COMPILER=clang++ \
-  -DCMAKE_C_FLAGS="-march=x86-64 -mtune=generic -msse4.1 -msse4.2 -mpopcnt" \
-  -DCMAKE_CXX_FLAGS="-march=x86-64 -mtune=generic -msse4.1 -msse4.2 -mpopcnt" \
-  -Wno-dev
+            <!-- ====== ARCHITECTURE ====== -->
+            <section id="architecture">
+                <h2>
+                    <svg
+                        class="ico ico-lg"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M4 2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm1 2v6h6V4H5zm8 0v6h6V4h-6zM4 12v8h6v-8H5zm8 0v8h6v-8h-6z"
+                        />
+                    </svg>
+                    <span
+                        data-en="Project Architecture"
+                        data-es="Arquitectura del Proyecto"
+                        >Project Architecture</span
+                    >
+                </h2>
+                <h3
+                    data-en="Library Structure"
+                    data-es="Estructura de librer&#237;as"
+                >
+                    Library Structure
+                </h3>
+                <p
+                    data-en="The project is divided into two main libraries:"
+                    data-es="El proyecto est&#225; dividido en dos librer&#237;as principales:"
+                >
+                    The project is divided into two main libraries:
+                </p>
+                <ul>
+                    <li>
+                        <strong><code>TrinityCore</code></strong>
+                        <span
+                            data-en="Business logic (version management, configuration, Bedrock runtime communication, pack management, launching and export)."
+                            data-es="Lógica de negocio (gestión de versiones, configuración, comunicación con el runtime de Bedrock, gestión de packs, lanzamiento y exportación)."
+                            >Business logic (version management, configuration,
+                            Bedrock runtime communication, pack management,
+                            launching and export).</span
+                        >
+                    </li>
+                    <li>
+                        <strong><code>TrinityUI</code></strong>
+                        <span
+                            data-en="Qt-based graphical interfaces (windows, dialogs, widgets)."
+                            data-es="Interfaces gráficas basadas en Qt (ventanas, diálogos, widgets)."
+                            >Qt-based graphical interfaces (windows, dialogs,
+                            widgets).</span
+                        >
+                    </li>
+                </ul>
+                <h3
+                    data-en="Clear Separation of Responsibilities"
+                    data-es="Separaci&#243;n clara de responsabilidades"
+                >
+                    Clear Separation of Responsibilities
+                </h3>
+                <ul>
+                    <li>
+                        <code>src/TrinityLib/core/</code>
+                        <span
+                            data-en="File and configuration logic"
+                            data-es="Lógica de archivos y configuración"
+                            >File and configuration logic</span
+                        >
+                    </li>
+                    <li>
+                        <code>src/TrinityLib/ui/</code>
+                        <span
+                            data-en="User interface components"
+                            data-es="Componentes de interfaz de usuario"
+                            >User interface components</span
+                        >
+                    </li>
+                    <li>
+                        <code>app/</code>
+                        <span data-en="Main binary" data-es="Binario principal"
+                            >Main binary</span
+                        >
+                        <code>trinity</code>
+                    </li>
+                    <li>
+                        <code>resources/</code>
+                        <span
+                            data-en="Resources: branding, icons, shortcuts, i18n, fonts, runtime"
+                            data-es="Recursos: branding, iconos, accesos directos, i18n, fuentes, runtime"
+                            >Resources: branding, icons, shortcuts, i18n, fonts,
+                            runtime</span
+                        >
+                    </li>
+                </ul>
+                <div class="note">
+                    <svg
+                        class="ico ico-sm"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+                        />
+                    </svg>
+                    <strong
+                        data-en="Modular architecture"
+                        data-es="Arquitectura modular"
+                        >Modular architecture</strong
+                    >:
+                    <span
+                        data-en="Facilitates maintenance, testing and component reuse."
+                        data-es="Facilita mantenimiento, pruebas y reutilizaci&#243;n de componentes."
+                        >Facilitates maintenance, testing and component
+                        reuse.</span
+                    >
+                </div>
+            </section>
 
-make -j$(getconf _NPROCESSORS_ONLN)
-sudo make install</code></pre>
-    </section>
+            <!-- ====== TRINCHETE ====== -->
+            <section id="trinchete">
+                <h2>
+                    <svg
+                        class="ico ico-lg"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path d="M8 5v14l11-7z" />
+                    </svg>
+                    <span>Trinchete</span>
+                </h2>
+                <p
+                    class="subtitle"
+                    data-en="Launcher Interface"
+                    data-es="Interfaz del launcher"
+                >
+                    Launcher Interface
+                </p>
+                <h3 data-en="Top Bar" data-es="Barra superior">Top Bar</h3>
+                <ul>
+                    <li>
+                        <strong data-en="+ Extract APK" data-es="+ Extraer APK"
+                            >+ Extract APK</strong
+                        >:
+                        <span data-en="select an" data-es="selecciona un"
+                            >select an</span
+                        >
+                        <code>.apk</code>,
+                        <span
+                            data-en="name it and extract with"
+                            data-es="dale un nombre y lo extrae con"
+                            >name it and extract with</span
+                        >
+                        <code>mcpelauncher-extract</code>.
+                    </li>
+                    <li>
+                        <strong data-en="Import" data-es="Importar"
+                            >Import</strong
+                        >:
+                        <span
+                            data-en="restore a saved version from"
+                            data-es="restaura una versión guardada en"
+                            >restore a saved version from</span
+                        >
+                        <code>.tar.gz</code>.
+                    </li>
+                    <li>
+                        <strong data-en="Tools" data-es="Herramientas"
+                            >Tools</strong
+                        >:
+                        <span data-en="opens the" data-es="abre la aplicación"
+                            >opens the</span
+                        >
+                        <code>trinito</code>.
+                    </li>
+                </ul>
+                <h3
+                    data-en="Right Panel (selected version)"
+                    data-es="Panel derecho (versi&#243;n seleccionada)"
+                >
+                    Right Panel (selected version)
+                </h3>
+                <ul>
+                    <li>
+                        <strong data-en="PLAY" data-es="JUGAR">PLAY</strong>:
+                        <span data-en="runs" data-es="ejecuta">runs</span>
+                        <code>mcpelauncher-client -dg &lt;path&gt;</code>
+                        <span
+                            data-en="and closes the launcher."
+                            data-es="y cierra el launcher."
+                            >and closes the launcher.</span
+                        >
+                    </li>
+                    <li>
+                        <strong
+                            data-en="Create Shortcut"
+                            data-es="Crear Acceso Directo"
+                            >Create Shortcut</strong
+                        >:
+                        <span data-en="generates a" data-es="genera un"
+                            >generates a</span
+                        >
+                        <code>.desktop</code>
+                        <span data-en="file in" data-es="archivo en"
+                            >file in</span
+                        >
+                        ~/Descargas/.
+                    </li>
+                    <li>
+                        <strong
+                            data-en="Edit Settings"
+                            data-es="Editar Configuración"
+                            >Edit Settings</strong
+                        >:
+                        <span
+                            data-en="add environment variables (e.g.:"
+                            data-es="añade variables de entorno (ej:"
+                            >add environment variables (e.g.:</span
+                        >
+                        <code>DRI_PRIME=1</code>).
+                    </li>
+                    <li>
+                        <strong data-en="Export" data-es="Exportar"
+                            >Export</strong
+                        >:
+                        <span
+                            data-en="saves the version + its data as"
+                            data-es="guarda la versión + sus datos en"
+                            >saves the version + its data as</span
+                        >
+                        <code>.tar.gz</code>.
+                    </li>
+                    <li>
+                        <strong data-en="Delete" data-es="Eliminar"
+                            >Delete</strong
+                        >:
+                        <span
+                            data-en="permanently removes the version."
+                            data-es="borra permanentemente la versión."
+                            >permanently removes the version.</span
+                        >
+                    </li>
+                </ul>
+                <div class="note">
+                    <svg
+                        class="ico ico-sm"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+                        />
+                    </svg>
+                    <strong
+                        data-en="Modern dark-themed interface with icon support"
+                        data-es="Interfaz moderna con tema oscuro y soporte para &#237;conos"
+                        >Modern dark-themed interface with icon support</strong
+                    >.
+                </div>
+            </section>
 
-    <!-- Sección Flatpak -->
-    <section id="flatpak">
-      <h2>📦 Empaquetado en Flatpak</h2>
-      <h3>Requisitos</h3>
-      <pre><code>flatpak install flathub io.qt.qtwebengine.BaseApp//6.9
+            <!-- ====== TRINITO ====== -->
+            <section id="trinito">
+                <h2>
+                    <svg
+                        class="ico ico-lg"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM10 4h4v2h-4V4zm10 16H4V8h16v12z"
+                        />
+                    </svg>
+                    <span>Trinito</span>
+                </h2>
+                <p
+                    class="subtitle"
+                    data-en="Content Manager"
+                    data-es="Gestor de Contenido"
+                >
+                    Content Manager
+                </p>
+                <table>
+                    <tr>
+                        <th data-en="Tab" data-es="Pesta&#241;a">Tab</th>
+                        <th data-en="Type" data-es="Tipo">Type</th>
+                        <th data-en="Destination" data-es="Destino">
+                            Destination
+                        </th>
+                    </tr>
+                    <tr>
+                        <td><strong>Mods</strong></td>
+                        <td data-en="File" data-es="Archivo">File</td>
+                        <td><code>behavior_packs/</code></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong data-en="Textures" data-es="Texturas"
+                                >Textures</strong
+                            >
+                        </td>
+                        <td data-en="File" data-es="Archivo">File</td>
+                        <td><code>resource_packs/</code></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong data-en="Worlds" data-es="Mundos"
+                                >Worlds</strong
+                            >
+                        </td>
+                        <td>
+                            <strong data-en="Folder" data-es="Carpeta"
+                                >Folder</strong
+                            >
+                        </td>
+                        <td><code>minecraftWorlds/</code></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong data-en="Development" data-es="Desarrollo"
+                                >Development</strong
+                            >
+                        </td>
+                        <td data-en="File" data-es="Archivo">File</td>
+                        <td><code>development_.../</code></td>
+                    </tr>
+                </table>
+                <h3 data-en="Key Features" data-es="Funcionalidades clave">
+                    Key Features
+                </h3>
+                <ul>
+                    <li
+                        data-en="Enabled: normal name."
+                        data-es="Habilitado: nombre normal."
+                    >
+                        <strong data-en="Enabled" data-es="Habilitado"
+                            >Enabled</strong
+                        >: normal name.
+                    </li>
+                    <li>
+                        <strong data-en="Disabled" data-es="Deshabilitado"
+                            >Disabled</strong
+                        >:
+                        <span data-en="renamed to" data-es="renombrado a"
+                            >renamed to</span
+                        >
+                        <code>.disabled</code>
+                        <span data-en="and compressed." data-es="y comprimido."
+                            >and compressed.</span
+                        >
+                    </li>
+                    <li
+                        data-en="Interactive checkboxes, reload and deletion."
+                        data-es="Checkboxes interactivos, recarga y eliminaci&#243;n."
+                    >
+                        Interactive checkboxes, reload and deletion.
+                    </li>
+                </ul>
+            </section>
+
+            <!-- ====== BUILDING ====== -->
+            <section id="build">
+                <h2>
+                    <svg
+                        class="ico ico-lg"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M22.7 19l-9.1-9.1a6 6 0 1 0-1.4 1.4l9.1 9.1a1 1 0 0 0 1.4-1.4zM7 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"
+                        />
+                    </svg>
+                    <span
+                        data-en="Building &amp; Installation"
+                        data-es="Compilaci&#243;n e Instalaci&#243;n"
+                        >Building &amp; Installation</span
+                    >
+                </h2>
+                <h3
+                    data-en="Method 1: Automated (Recommended)"
+                    data-es="M&#233;todo 1: Automatizado (Recomendado)"
+                >
+                    Method 1: Automated (Recommended)
+                </h3>
+                <p
+                    data-en="The project includes a"
+                    data-es="El proyecto incluye un"
+                >
+                    <code>Makefile</code>
+                    <span
+                        data-en="that wraps"
+                        data-es="que act&#27;ua como wrapper para"
+                    >
+                        <code>build.sh</code>:</span
+                    >
+                </p>
+                <pre><code># Install deps, build and run (ideal first time)
+make start
+
+# Quick rebuild after code changes
+make run
+
+# Build and install to /usr/local/bin
+make install
+
+# Clean build files
+make clean
+
+# Update translation .ts files
+make translations</code></pre>
+                <h3
+                    data-en="Method 2: Manual with CMake/Ninja"
+                    data-es="M&#233;todo 2: Manual con CMake/Ninja"
+                >
+                    Method 2: Manual with CMake/Ninja
+                </h3>
+                <pre><code>mkdir build &amp;&amp; cd build
+
+# Configure with Ninja
+export CC=clang
+export CXX=clang++
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..
+
+# Build
+ninja
+
+# Run
+./app/trinity</code></pre>
+                <h3
+                    data-en="Method 3: Direct CMake"
+                    data-es="M&#233;todo 3: CMake directo"
+                >
+                    Method 3: Direct CMake
+                </h3>
+                <pre><code>cmake -B build -S . -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang
+
+cmake --build build --parallel $(nproc)
+
+./app/trinity</code></pre>
+                <div class="note">
+                    <svg
+                        class="ico ico-sm"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+                        />
+                    </svg>
+                    <strong data-en="Prerequisite" data-es="Requisito previo"
+                        >Prerequisite:</strong
+                    >
+                    <span data-en="The" data-es="Los binarios de">The</span>
+                    <code>mcpelauncher-client</code>
+                    <span data-en="and" data-es="y">and</span>
+                    <code>mcpelauncher-extract</code>
+                    <span
+                        data-en="binaries must be installed. See the official repo:"
+                        data-es="deben estar instalados en el sistema. Consulta el repositorio oficial:"
+                        >binaries must be installed. See the official
+                        repo:</span
+                    >
+                    <a
+                        href="https://github.com/minecraft-linux/mcpelauncher-manifest"
+                        target="_blank"
+                        >mcpelauncher-manifest</a
+                    >
+                </div>
+            </section>
+
+            <!-- ====== DOCKER ====== -->
+            <section id="docker">
+                <h2>
+                    <svg
+                        class="ico ico-lg"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M19 13h-1v6h-3v-6H8v-2h3V5h3v6h3v2zM3 5h2v14H3V5zm5 0h2v14H8V5z"
+                        />
+                    </svg>
+                    <span
+                        data-en="Isolated Environment with Docker"
+                        data-es="Entorno Aislado con Docker"
+                        >Isolated Environment with Docker</span
+                    >
+                </h2>
+                <h3
+                    data-en="Using Docker Compose (Recommended)"
+                    data-es="Usando Docker Compose (Recomendado)"
+                >
+                    Using Docker Compose (Recommended)
+                </h3>
+                <pre><code># Build image with user permissions
+UID=$(id -u) GID=$(id -g) docker compose build
+
+# Enter container
+UID=$(id -u) GID=$(id -g) docker compose run --rm trinity
+
+# Inside, build:
+./build.sh --clean --release</code></pre>
+                <h3 data-en="Using raw Docker" data-es="Usando Docker puro">
+                    Using raw Docker
+                </h3>
+                <pre><code>docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) \
+  -t trinity-launcher .
+
+docker run --rm -it \
+  --user $(id -u):$(id -g) \
+  -e DISPLAY=$DISPLAY \
+  -v "$(pwd)":/project \
+  -v cargo-cache:/home/trinity/.cargo/registry \
+  -v rust-cache:/home/trinity/project/target \
+  -v dev-v:/data \
+  trinity-launcher /bin/bash</code></pre>
+                <h3
+                    data-en="compose.yaml Configuration"
+                    data-es="Configuraci&#243;n de compose.yaml"
+                >
+                    compose.yaml Configuration
+                </h3>
+                <ul>
+                    <li
+                        data-en="Mounts local project in"
+                        data-es="Monta el proyecto local en"
+                    >
+                        /home/trinity/project
+                    </li>
+                    <li
+                        data-en="Accesses X11 display for UI execution"
+                        data-es="Accede al display X11 para ejecuci&#243;n de UI"
+                    ></li>
+                    <li
+                        data-en="Integrates Discord IPC for Rich Presence"
+                        data-es="Integra Discord IPC para Rich Presence"
+                    ></li>
+                    <li
+                        data-en="Persistent volumes for Cargo and Rust cache"
+                        data-es="Vol&#252;menes persistentes para cach&#233; de Cargo y Rust"
+                    ></li>
+                </ul>
+            </section>
+
+            <!-- ====== NIX ====== -->
+            <section id="nix">
+                <h2>
+                    <svg
+                        class="ico ico-lg"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M12 2 2 12l10 10 10-10L12 2zm0 3.41L18.59 12 12 18.59 5.41 12 12 5.41zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"
+                        />
+                    </svg>
+                    <span data-en="Nix / NixOS" data-es="Nix / NixOS"
+                        >Nix / NixOS</span
+                    >
+                </h2>
+                <p
+                    data-en="For NixOS users or Nix environments, Trinity Launcher provides a"
+                    data-es="Para usuarios de NixOS o entornos Nix, Trinity Launcher proporciona un"
+                >
+                    <code>flake.nix</code>
+                    <span
+                        data-en="that configures the complete development environment:"
+                        data-es="que configura el entorno de desarrollo completo:"
+                        >that configures the complete development
+                        environment:</span
+                    >
+                </p>
+                <pre><code># Run dev shell (test only)
+nix --extra-experimental-features "nix-command flakes" develop</code></pre>
+                <h3
+                    data-en="Dependencies included in the flake"
+                    data-es="Dependencias incluidas en el flake"
+                >
+                    Dependencies included in the flake
+                </h3>
+                <ul>
+                    <li>
+                        <strong>Qt5:</strong> qtbase, qtdeclarative, qtsvg,
+                        qttools, qttranslations
+                    </li>
+                    <li>
+                        <strong data-en="Graphics" data-es="Gr&#225;ficos"
+                            >Graphics:</strong
+                        >
+                        Mesa, Vulkan, DRM, GBM, Wayland, libdecor
+                    </li>
+                    <li>
+                        <strong data-en="Audio" data-es="Audio">Audio:</strong>
+                        PulseAudio, ALSA, PipeWire, JACK, sndio
+                    </li>
+                    <li>
+                        <strong data-en="System" data-es="Sistema"
+                            >System:</strong
+                        >
+                        libzip, libpng, libusb, libevdev, D-Bus, BlueZ, IBus
+                    </li>
+                </ul>
+                <p
+                    data-en="For detailed NixOS installation instructions, see:"
+                    data-es="Para instrucciones detalladas de instalaci&#243;n en NixOS, consulta:"
+                >
+                    <a
+                        href="https://codeberg.org/javiercplus/Trinity-Launcher-NIXOS/src/branch/main/"
+                        target="_blank"
+                        >Trinity-Launcher-NIXOS</a
+                    >
+                </p>
+            </section>
+
+            <!-- ====== APPIMAGE ====== -->
+            <section id="appimage">
+                <h2>
+                    <svg
+                        class="ico ico-lg"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                    </svg>
+                    <span
+                        data-en="AppImage Packaging"
+                        data-es="Empaquetado AppImage"
+                        >AppImage Packaging</span
+                    >
+                </h2>
+                <p
+                    data-en="Trinity Launcher can be packaged as an AppImage for portable distribution. The project includes GitHub Actions workflows to automate this process."
+                    data-es="Trinity Launcher puede empaquetarse como AppImage para distribuci&#243;n portátil. El proyecto incluye workflows de GitHub Actions para automatizar este proceso."
+                >
+                    Trinity Launcher can be packaged as an AppImage for portable
+                    distribution. The project includes GitHub Actions workflows
+                    to automate this process.
+                </p>
+                <h3
+                    data-en="Components included in AppImage"
+                    data-es="Componentes incluidos en AppImage"
+                >
+                    Components included in AppImage
+                </h3>
+                <ul>
+                    <li>
+                        <code>mcpelauncher-client</code>
+                        <span data-en="Game engine" data-es="Motor del juego"
+                            >Game engine</span
+                        >
+                    </li>
+                    <li>
+                        <code>mcpelauncher-extract</code>
+                        <span
+                            data-en="APK extractor"
+                            data-es="Extractor de APKs"
+                            >APK extractor</span
+                        >
+                    </li>
+                    <li>
+                        <code>trinity</code>
+                        <span
+                            data-en="Main launcher"
+                            data-es="Launcher principal"
+                            >Main launcher</span
+                        >
+                    </li>
+                    <li>
+                        <code>msa-daemon</code>
+                        <span data-en="and" data-es="y">and</span>
+                        <code>msa-ui-qt</code>
+                        <span
+                            data-en="Authentication services"
+                            data-es="Servicios de autenticación"
+                            >Authentication services</span
+                        >
+                    </li>
+                    <li
+                        data-en="Critical libraries: libzip, libevdev, libminizip"
+                        data-es="Librer&#237;as cr&#237;ticas: libzip, libevdev, libminizip"
+                    >
+                        Critical libraries: libzip, libevdev, libminizip
+                    </li>
+                </ul>
+                <h3
+                    data-en="Available CI/CD Workflows"
+                    data-es="Flujos de CI/CD disponibles"
+                >
+                    Available CI/CD Workflows
+                </h3>
+                <ul>
+                    <li>
+                        <strong>x86_64:</strong>
+                        <code>simple-appimage.yml</code>
+                        <span data-en="and" data-es="y">
+                            <code>x86_64-appimage.yml</code></span
+                        >
+                    </li>
+                    <li>
+                        <strong>ARM:</strong> <code>appimage-arm.yml</code>
+                        <span data-en="and" data-es="y">
+                            <code>arm-zink.yml</code></span
+                        >
+                    </li>
+                    <li>
+                        <strong>macOS:</strong> <code>macosx.yml</code>
+                        <span data-en="and" data-es="y">
+                            <code>mesa-macos.yml</code></span
+                        >
+                    </li>
+                </ul>
+                <div class="note">
+                    <svg
+                        class="ico ico-sm"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+                        />
+                    </svg>
+                    <span
+                        data-en="AppImages are generated with"
+                        data-es="Los AppImages se generan con"
+                        >AppImages are generated with</span
+                    >
+                    <code>linuxdeploy</code>
+                    <span
+                        data-en="and the Qt plugin, ensuring full portability across Linux distributions."
+                        data-es="y el plugin Qt, asegurando portabilidad total entre distribuciones Linux."
+                        >and the Qt plugin, ensuring full portability across
+                        Linux distributions.</span
+                    >
+                </div>
+            </section>
+
+            <!-- ====== FLATPAK ====== -->
+            <section id="flatpak">
+                <h2>
+                    <svg
+                        class="ico ico-lg"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M20 7H4c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zm-2 8H6v-6h12v6z"
+                        />
+                    </svg>
+                    <span
+                        data-en="Flatpak Packaging"
+                        data-es="Empaquetado en Flatpak"
+                        >Flatpak Packaging</span
+                    >
+                </h2>
+                <h3 data-en="Requirements" data-es="Requisitos">
+                    Requirements
+                </h3>
+                <pre><code>flatpak install flathub io.qt.qtwebengine.BaseApp//6.9
 flatpak install flathub org.kde.Platform//6.9 org.kde.Sdk//6.9</code></pre>
-      <h3>Construcción</h3>
-      <pre><code>flatpak-builder --user --force-clean build-dir com.trench.trinity.launcher.json
+                <h3 data-en="Build" data-es="Construcci&#243;n">Build</h3>
+                <pre><code>flatpak-builder --user --force-clean build-dir com.trench.trinity.launcher.json
 flatpak-builder --repo=repo --force-clean build-dir com.trench.trinity.launcher.json
 flatpak build-bundle repo trinity.flatpak com.trench.trinity.launcher
 flatpak install ./trinity.flatpak</code></pre>
-      <div class="note">✅ El manifest debe incluir <code>libevdev</code>, <code>libzip</code> y copiar <code>files/</code> a <code>/app</code>.</div>
-    </section>
+                <div class="note">
+                    <svg
+                        class="ico ico-sm"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+                        />
+                    </svg>
+                    <span
+                        data-en="The manifest must include"
+                        data-es="El manifest debe incluir"
+                        >The manifest must include</span
+                    >
+                    <code>libevdev</code>, <code>libzip</code>
+                    <span data-en="and copy" data-es="y copiar">and copy</span>
+                    <code>files/</code>
+                    <span data-en="to" data-es="a">to</span>
+                    <code>/app</code>.
+                </div>
+            </section>
 
-    <!-- Sección Pruebas -->
-    <section id="pruebas">
-      <h2>🧪 Pruebas</h2>
-      <h3>En sistema</h3>
-      <pre><code>trinchete
-trinito</code></pre>
-      <h3>En Flatpak</h3>
-      <pre><code>flatpak run com.trench.trinity.launcher
-flatpak run --command=trinito com.trench.trinity.launcher</code></pre>
-      <h3>Rutas de datos (automáticas)</h3>
-      <ul>
-        <li><strong>Flatpak</strong>: <code>~/.var/app/com.trench.trinity.launcher/data/mcpelauncher/</code></li>
-        <li><strong>Local</strong>: <code>~/.local/share/mcpelauncher/</code></li>
-      </ul>
-      <div class="note">Ambas usan <code>QStandardPaths::GenericDataLocation</code> → <strong>total compatibilidad</strong>.</div>
-    </section>
+            <!-- ====== CI/CD ====== -->
+            <section id="ci">
+                <h2>
+                    <svg
+                        class="ico ico-lg"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 10c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                        />
+                    </svg>
+                    <span
+                        data-en="Continuous Integration (CI/CD)"
+                        data-es="Integraci&#243;n Continua (CI/CD)"
+                        >Continuous Integration (CI/CD)</span
+                    >
+                </h2>
+                <p
+                    data-en="The project uses GitHub Actions to automate building and packaging:"
+                    data-es="El proyecto utiliza GitHub Actions para automatizar compilaci&#243;n y empaquetado:"
+                >
+                    The project uses GitHub Actions to automate building and
+                    packaging:
+                </p>
+                <h3
+                    data-en="Available Workflows"
+                    data-es="Workflows disponibles"
+                >
+                    Available Workflows
+                </h3>
+                <table>
+                    <tr>
+                        <th data-en="Workflow" data-es="Workflow">Workflow</th>
+                        <th data-en="Description" data-es="Descripci&#243;n">
+                            Description
+                        </th>
+                        <th data-en="Trigger" data-es="Disparador">Trigger</th>
+                    </tr>
+                    <tr>
+                        <td><code>compilar.yml</code></td>
+                        <td
+                            data-en="Builds binaries on Ubuntu latest"
+                            data-es="Compila binarios en Ubuntu latest"
+                        >
+                            Builds binaries on Ubuntu latest
+                        </td>
+                        <td
+                            data-en="Push to main/master, PR, manual"
+                            data-es="Push a main/master, PR, manual"
+                        >
+                            Push to main/master, PR, manual
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>simple-appimage.yml</code></td>
+                        <td
+                            data-en="Packages complete x86_64 AppImage"
+                            data-es="Empaqueta AppImage x86_64 completo"
+                        >
+                            Packages complete x86_64 AppImage
+                        </td>
+                        <td
+                            data-en="Manual (workflow_dispatch)"
+                            data-es="Manual (workflow_dispatch)"
+                        >
+                            Manual (workflow_dispatch)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>x86_64-appimage.yml</code></td>
+                        <td
+                            data-en="AppImage with MSA and external deps"
+                            data-es="AppImage con MSA y dependencias externas"
+                        >
+                            AppImage with MSA and external deps
+                        </td>
+                        <td
+                            data-en="Manual (workflow_dispatch)"
+                            data-es="Manual (workflow_dispatch)"
+                        >
+                            Manual (workflow_dispatch)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>appimage-arm.yml</code></td>
+                        <td
+                            data-en="AppImage for ARM architectures"
+                            data-es="AppImage para arquitecturas ARM"
+                        >
+                            AppImage for ARM architectures
+                        </td>
+                        <td data-en="Manual" data-es="Manual">Manual</td>
+                    </tr>
+                    <tr>
+                        <td><code>arm-zink.yml</code></td>
+                        <td
+                            data-en="ARM AppImage with Zink drivers"
+                            data-es="AppImage ARM con drivers Zink"
+                        >
+                            ARM AppImage with Zink drivers
+                        </td>
+                        <td data-en="Manual" data-es="Manual">Manual</td>
+                    </tr>
+                    <tr>
+                        <td><code>macosx.yml</code></td>
+                        <td
+                            data-en="Build for macOS"
+                            data-es="Compilaci&#243;n para macOS"
+                        >
+                            Build for macOS
+                        </td>
+                        <td data-en="Manual" data-es="Manual">Manual</td>
+                    </tr>
+                    <tr>
+                        <td><code>mesa-macos.yml</code></td>
+                        <td
+                            data-en="macOS with Mesa drivers"
+                            data-es="macOS con drivers Mesa"
+                        >
+                            macOS with Mesa drivers
+                        </td>
+                        <td data-en="Manual" data-es="Manual">Manual</td>
+                    </tr>
+                </table>
+                <h3
+                    data-en="Generated Artifacts"
+                    data-es="Artefactos generados"
+                >
+                    Generated Artifacts
+                </h3>
+                <ul>
+                    <li
+                        data-en="Built binaries:"
+                        data-es="Binarios compilados:"
+                    >
+                        <code>build/app/trinity</code>
+                    </li>
+                    <li data-en="AppImages:" data-es="AppImages:">
+                        <code>Trinity-Launcher-*.AppImage</code>
+                    </li>
+                    <li
+                        data-en="Full automation from clone to packaging"
+                        data-es="Automatizaci&#243;n completa desde clone hasta empaquetado"
+                    >
+                        Full automation from clone to packaging
+                    </li>
+                </ul>
+            </section>
 
-    <!-- Sección Licencia -->
-    <section id="licencia">
-      <h2>📄 Licencia</h2>
-      <p>Trinity Launcher se distribuye bajo la <strong>Licencia BSD de 3 cláusulas</strong>.</p>
-      <pre style="font-size: 0.9rem; white-space: pre-wrap;">Copyright (c) 2024, Trinity Launcher Authors
+            <!-- ====== TRANSLATIONS ====== -->
+            <section id="translations">
+                <h2>
+                    <svg
+                        class="ico ico-lg"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"
+                        />
+                    </svg>
+                    <span
+                        data-en="Translations &amp; Internationalization"
+                        data-es="Traducciones e Internacionalizaci&#243;n"
+                        >Translations &amp; Internationalization</span
+                    >
+                </h2>
+                <p
+                    data-en="Trinity Launcher supports multiple languages through Qt"
+                    data-es="Trinity Launcher soporta m&#250;ltiples idiomas mediante archivos"
+                >
+                    <code>.ts</code>
+                    <span data-en="files:" data-es="de Qt:">files:</span>
+                </p>
+                <h3
+                    data-en="How to add a language"
+                    data-es="C&#243;mo a&#241;adir un idioma"
+                >
+                    How to add a language
+                </h3>
+                <ol>
+                    <li data-en="Go to" data-es="Ve a">
+                        <code>resources/i18n/</code>
+                        <span data-en="and duplicate" data-es="y duplica">
+                            <code>trinity_es.ts</code></span
+                        >
+                    </li>
+                    <li
+                        data-en="Rename it with the ISO 639-1 language code (e.g.:"
+                        data-es="Renom&#237;bralo con el c&#243;digo de idioma ISO 639-1 (ej:"
+                    >
+                        <code>trinity_en.ts</code>)
+                    </li>
+                    <li data-en="Translate using" data-es="Traduce usando">
+                        <strong>Qt Linguist</strong>
+                        <span
+                            data-en="or a text editor"
+                            data-es="o un editor de texto"
+                            >or a text editor</span
+                        >
+                    </li>
+                    <li
+                        data-en="Register the language in"
+                        data-es="Registra el idioma en"
+                    >
+                        <code>resources/resources.qrc</code>
+                    </li>
+                    <li data-en="Build with" data-es="Compila con">
+                        <code>./build.sh --release --run</code>
+                    </li>
+                </ol>
+                <h3 data-en="Required Tools" data-es="Herramientas necesarias">
+                    Required Tools
+                </h3>
+                <ul>
+                    <li>
+                        <strong>Qt Linguist</strong>
+                        <span data-en="(Recommended)" data-es="(Recomendado)"
+                            >(Recommended)</span
+                        >
+                        <ul>
+                            <li>
+                                Ubuntu/Debian:
+                                <code
+                                    >sudo apt install qt6-tools-dev-tools</code
+                                >
+                            </li>
+                            <li>
+                                Arch Linux:
+                                <code>sudo pacman -S qt6-tools</code>
+                            </li>
+                        </ul>
+                    </li>
+                    <li
+                        data-en="Or any text editor (GEANY, nvim, VS Code, Notepad++, etc.)"
+                        data-es="O cualquier editor de texto (GEANY, nvim, VS Code, Notepad++, etc.)"
+                    >
+                        Or any text editor (GEANY, nvim, VS Code, Notepad++,
+                        etc.)
+                    </li>
+                </ul>
+                <h3
+                    data-en="Update existing translations"
+                    data-es="Actualizar traducciones existentes"
+                >
+                    Update existing translations
+                </h3>
+                <pre><code>make translations
+# or / o usa el script:
+./build.sh --update-ts</code></pre>
+                <div class="note">
+                    <svg
+                        class="ico ico-sm"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                        />
+                    </svg>
+                    <strong
+                        data-en="Important rules"
+                        data-es="Reglas importantes"
+                        >Important rules:</strong
+                    ><br />
+                    <span
+                        data-en="Do NOT translate variables like"
+                        data-es="NO traduzcas variables como"
+                        >Do NOT translate variables like</span
+                    >
+                    <code>%1</code>, <code>%2</code><br />
+                    <span data-en="Keep the" data-es="Mantén el símbolo"
+                        >Keep the</span
+                    >
+                    <code>&amp;</code>
+                    <span
+                        data-en="symbol for keyboard shortcuts (Alt+key)"
+                        data-es="para atajos de teclado (Alt+tecla)"
+                        >symbol for keyboard shortcuts (Alt+key)</span
+                    ><br />
+                    <span
+                        data-en="Respect the original punctuation"
+                        data-es="Respeta la puntuación original"
+                        >Respect the original punctuation</span
+                    >
+                </div>
+            </section>
+
+            <!-- ====== CONTRIBUTE ====== -->
+            <section id="contribute">
+                <h2>
+                    <svg
+                        class="ico ico-lg"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
+                        />
+                    </svg>
+                    <span
+                        data-en="Contribute to the Project"
+                        data-es="Contribuir al Proyecto"
+                        >Contribute to the Project</span
+                    >
+                </h2>
+                <p
+                    data-en="Contributions are welcome! Please read these important guidelines:"
+                    data-es="&#161;Las contribuciones son bienvenidas! Lee estas pautas importantes:"
+                >
+                    Contributions are welcome! Please read these important
+                    guidelines:
+                </p>
+                <h3
+                    data-en="Prior Considerations"
+                    data-es="Consideraciones previas"
+                >
+                    Prior Considerations
+                </h3>
+                <div class="note">
+                    <svg
+                        class="ico ico-sm"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
+                        />
+                    </svg>
+                    <span
+                        data-en="Trinity Launcher is in an organizational phase. Current priority is"
+                        data-es="Trinity Launcher está en fase organizativa. La prioridad actual es"
+                        >Trinity Launcher is in an organizational phase. Current
+                        priority is</span
+                    >
+                    <strong
+                        data-en="to document, structure and report"
+                        data-es="documentar, estructurar y reportar"
+                        >to document, structure and report</strong
+                    >,
+                    <span
+                        data-en="not to optimize code."
+                        data-es="no optimizar código."
+                        >not to optimize code.</span
+                    >
+                </div>
+                <h3
+                    data-en="Explicit and well-documented commits"
+                    data-es="Commits expl&#237;citos y bien documentados"
+                >
+                    Explicit and well-documented commits
+                </h3>
+                <p
+                    data-en="Commits must be clear and specific:"
+                    data-es="Los commits deben ser claros y espec&#237;ficos:"
+                >
+                    Commits must be clear and specific:
+                </p>
+                <pre><code>&#x2705; GOOD:
+git commit -m "feat: add lib validation in trinity"
+git commit -m "fix: correction in data path in Flatpak"
+git commit -m "docs: update build instructions"
+
+&#x274c; BAD:
+git commit -m "changes"
+git commit -m "updates"</code></pre>
+                <h3
+                    data-en="Recommended format (Conventional Commits)"
+                    data-es="Formato recomendado (Conventional Commits)"
+                >
+                    Recommended format (Conventional Commits)
+                </h3>
+                <ul>
+                    <li>
+                        <code>feat:</code>
+                        <span
+                            data-en="New feature"
+                            data-es="Nueva funcionalidad"
+                            >New feature</span
+                        >
+                    </li>
+                    <li>
+                        <code>fix:</code>
+                        <span data-en="Bug fix" data-es="Corrección de bug"
+                            >Bug fix</span
+                        >
+                    </li>
+                    <li>
+                        <code>docs:</code>
+                        <span data-en="Documentation" data-es="Documentación"
+                            >Documentation</span
+                        >
+                    </li>
+                    <li>
+                        <code>refactor:</code>
+                        <span
+                            data-en="Code change without new functionality"
+                            data-es="Cambio de código sin nueva funcionalidad"
+                            >Code change without new functionality</span
+                        >
+                    </li>
+                    <li>
+                        <code>test:</code>
+                        <span data-en="Tests" data-es="Tests">Tests</span>
+                    </li>
+                    <li>
+                        <code>chore:</code>
+                        <span
+                            data-en="Maintenance tasks"
+                            data-es="Tareas de mantenimiento"
+                            >Maintenance tasks</span
+                        >
+                    </li>
+                </ul>
+                <h3
+                    data-en="Code Standards"
+                    data-es="Est&#225;ndares de c&#243;digo"
+                >
+                    Code Standards
+                </h3>
+                <table>
+                    <tr>
+                        <th data-en="Element" data-es="Elemento">Element</th>
+                        <th data-en="Style" data-es="Estilo">Style</th>
+                        <th data-en="Example" data-es="Ejemplo">Example</th>
+                    </tr>
+                    <tr>
+                        <td
+                            data-en="Functions/Methods"
+                            data-es="Funciones/M&#233;todos"
+                        >
+                            Functions/Methods
+                        </td>
+                        <td><code>camelCase</code></td>
+                        <td><code>loadInstalledVersions()</code></td>
+                    </tr>
+                    <tr>
+                        <td data-en="Variables" data-es="Variables">
+                            Variables
+                        </td>
+                        <td><code>camelCase</code></td>
+                        <td><code>selectedVersion</code></td>
+                    </tr>
+                    <tr>
+                        <td data-en="Constants" data-es="Constantes">
+                            Constants
+                        </td>
+                        <td><code>UPPER_SNAKE_CASE</code></td>
+                        <td><code>MAX_RETRIES</code></td>
+                    </tr>
+                    <tr>
+                        <td data-en="Classes" data-es="Clases">Classes</td>
+                        <td><code>PascalCase</code></td>
+                        <td><code>LauncherWindow</code></td>
+                    </tr>
+                    <tr>
+                        <td data-en="Files" data-es="Archivos">Files</td>
+                        <td><code>snake_case</code></td>
+                        <td><code>launcher_window.cpp</code></td>
+                    </tr>
+                </table>
+                <h3 data-en="Reporting Bugs" data-es="Reportar bugs">
+                    Reporting Bugs
+                </h3>
+                <p
+                    data-en="If you find a bug, do NOT fix it immediately. First:"
+                    data-es="Si encuentras un bug, NO lo corrijas inmediatamente. Primero:"
+                >
+                    If you find a bug, do NOT fix it immediately. First:
+                </p>
+                <ol>
+                    <li>
+                        <span data-en="Open an" data-es="Abre un">Open an</span>
+                        <a
+                            href="https://github.com/Trinity-LA/Trinity-Launcher/issues"
+                            target="_blank"
+                            >Issue</a
+                        >
+                    </li>
+                    <li>
+                        <span
+                            data-en="Include: descriptive title, expected and actual behavior, steps to reproduce, system"
+                            data-es="Incluye: título descriptivo, comportamiento esperado y real, pasos para reproducir, sistema"
+                            >Include: descriptive title, expected and actual
+                            behavior, steps to reproduce, system</span
+                        >
+                    </li>
+                    <li>
+                        <span data-en="Label as" data-es="Etiqueta como"
+                            >Label as</span
+                        >
+                        <code>bug</code>
+                    </li>
+                    <li
+                        data-en="Wait for maintainers to decide when and how to fix it"
+                        data-es="Espera a que los mantenedores decidan cuándo y cómo corregirlo"
+                    >
+                        Wait for maintainers to decide when and how to fix it
+                    </li>
+                </ol>
+                <h3 data-en="AI Usage" data-es="Uso de IA">AI Usage</h3>
+                <p>
+                    <span
+                        data-en="AI use is allowed for support, but"
+                        data-es="Se permite el uso de IA para soporte, pero"
+                        >AI use is allowed for support, but</span
+                    >
+                    <strong
+                        data-en="do NOT let AI modify code"
+                        data-es="NO dejes que IA modifique código"
+                        >do NOT let AI modify code</strong
+                    >
+                    <span
+                        data-en="without prior documentation. Stability is more important than optimization."
+                        data-es="sin documentación previa. La estabilidad es más importante que la optimización."
+                        >without prior documentation. Stability is more
+                        important than optimization.</span
+                    >
+                </p>
+            </section>
+
+            <!-- ====== TESTING ====== -->
+            <section id="testing">
+                <h2>
+                    <svg
+                        class="ico ico-lg"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path d="M7 2v11h3v9l7-12h-4l4-8z" />
+                    </svg>
+                    <span data-en="Testing" data-es="Pruebas">Testing</span>
+                </h2>
+                <h3 data-en="Native (system)" data-es="En sistema">
+                    Native (system)
+                </h3>
+                <pre><code>trinity</code></pre>
+                <h3 data-en="In Flatpak" data-es="En Flatpak">In Flatpak</h3>
+                <pre><code>flatpak run com.trench.trinity.launcher</code></pre>
+                <h3
+                    data-en="Data paths (automatic)"
+                    data-es="Rutas de datos (autom&#225;ticas)"
+                >
+                    Data paths (automatic)
+                </h3>
+                <ul>
+                    <li>
+                        <strong>Flatpak:</strong>
+                        <code
+                            >~/.var/app/com.trench.trinity.launcher/data/mcpelauncher/</code
+                        >
+                    </li>
+                    <li>
+                        <strong data-en="Native" data-es="Local"
+                            >Native:</strong
+                        >
+                        <code>~/.local/share/mcpelauncher/</code>
+                    </li>
+                </ul>
+                <div class="note">
+                    <span data-en="Both use" data-es="Ambas usan"
+                        >Both use</span
+                    >
+                    <code>QStandardPaths::GenericDataLocation</code>
+                    <span
+                        data-en="full compatibility."
+                        data-es="total compatibilidad."
+                        >full compatibility.</span
+                    >
+                </div>
+            </section>
+
+            <!-- ====== LICENSE ====== -->
+            <section id="license">
+                <h2>
+                    <svg
+                        class="ico ico-lg"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"
+                        />
+                    </svg>
+                    <span data-en="License" data-es="Licencia">License</span>
+                </h2>
+                <p
+                    data-en="Trinity Launcher is distributed under the"
+                    data-es="Trinity Launcher se distribuye bajo la"
+                >
+                    <strong
+                        data-en="BSD 3-Clause License"
+                        data-es="Licencia BSD de 3 cl&#225;usulas"
+                        >BSD 3-Clause License</strong
+                    >.
+                </p>
+                <pre style="font-size: 0.9rem; white-space: pre-wrap">
+Copyright (c) 2025, Trinity Launcher Authors
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -471,42 +2256,117 @@ DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
 SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</pre>
-      <p style="margin-top: 1rem;">
-        <a href="https://opensource.org/licenses/BSD-3-Clause" target="_blank">Ver licencia completa</a>
-      </p>
-    </section>
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</pre
+                >
+                <p style="margin-top: 1rem">
+                    <a
+                        href="https://opensource.org/licenses/BSD-3-Clause"
+                        target="_blank"
+                        data-en="View full license"
+                        data-es="Ver licencia completa"
+                        >View full license</a
+                    >
+                </p>
+            </section>
 
-    <footer>
-      <p>Documento técnico generado en enero de 2026</p>
-      <p><a href="https://github.com/Trinity-LA/Trinity-Launcher" target="_blank">Repositorio oficial en GitHub</a></p>
-    </footer>
-  </main>
+            <footer>
+                <p>
+                    <span
+                        data-en="Technical document generated in April 2026"
+                        data-es="Documento t&#233;cnico generado en abril de 2026"
+                        >Technical document generated in April 2026</span
+                    >
+                </p>
+                <p>
+                    <a
+                        href="https://github.com/Trinity-LA/Trinity-Launcher"
+                        target="_blank"
+                        data-en="Official repository on GitHub"
+                        data-es="Repositorio oficial en GitHub"
+                        >Official repository on GitHub</a
+                    >
+                </p>
+            </footer>
+        </main>
 
-  <script>
-    // Manejo de navegación
-    document.querySelectorAll('#navLinks a').forEach(link => {
-      link.addEventListener('click', function(e) {
-        e.preventDefault();
-        
-        // Remover clase 'active' de todos los enlaces y secciones
-        document.querySelectorAll('#navLinks a').forEach(a => a.classList.remove('active'));
-        document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
-        
-        // Añadir clase 'active' al enlace y sección seleccionada
-        this.classList.add('active');
-        const sectionId = this.getAttribute('data-section');
-        document.getElementById(sectionId).classList.add('active');
-        
-        // Cerrar menú móvil
-        document.getElementById('sidebar').classList.remove('active');
-      });
-    });
+        <script>
+            // ---- Navigation ----
+            document.querySelectorAll("#navLinks a").forEach((link) => {
+                link.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    document
+                        .querySelectorAll("#navLinks a")
+                        .forEach((a) => a.classList.remove("active"));
+                    document
+                        .querySelectorAll("section")
+                        .forEach((sec) => sec.classList.remove("active"));
+                    this.classList.add("active");
+                    const sectionId = this.getAttribute("data-section");
+                    document.getElementById(sectionId).classList.add("active");
+                    document
+                        .getElementById("sidebar")
+                        .classList.remove("active");
+                });
+            });
 
-    // Mobile menu toggle
-    document.getElementById('menuToggle').addEventListener('click', () => {
-      document.getElementById('sidebar').classList.toggle('active');
-    });
-  </script>
-</body>
+            // ---- Mobile menu ----
+            document
+                .getElementById("menuToggle")
+                .addEventListener("click", () => {
+                    const side = document.getElementById("sidebar");
+                    side.classList.toggle("active");
+                    const isOpen = side.classList.contains("active");
+                    document
+                        .getElementById("menuToggle")
+                        .setAttribute("aria-expanded", String(isOpen));
+                });
+            document
+                .getElementById("menuToggle")
+                .setAttribute("aria-expanded", "false");
+
+            // ---- Language Switch ----
+            let currentLang = "en";
+
+            function switchLang(lang) {
+                currentLang = lang;
+                document.documentElement.lang = lang;
+
+                // Update lang buttons
+                document.querySelectorAll(".lang-btn").forEach((btn) => {
+                    btn.classList.toggle("active", btn.dataset.lang === lang);
+                });
+
+                // Update all translatable elements
+                document
+                    .querySelectorAll("[data-" + lang + "]")
+                    .forEach((el) => {
+                        const text = el.getAttribute("data-" + lang);
+                        if (text) {
+                            el.textContent = text;
+                        }
+                    });
+
+                // Update meta description
+                const metaDesc = document.querySelector(
+                    'meta[name="description"]',
+                );
+                if (lang === "es") {
+                    metaDesc.content =
+                        "Trinity Launcher es un launcher modular para Minecraft Bedrock en Linux, con integraci\u00f3n Qt6, manejo de versiones, mods, empaquetado (Flatpak, AppImage, Docker) y soporte multiplataforma.";
+                } else {
+                    metaDesc.content =
+                        "Trinity Launcher is a modular launcher for Minecraft Bedrock on Linux, with Qt6 integration, version management, mods, and packaging (Flatpak, AppImage, Docker) with multiplatform support.";
+                }
+            }
+
+            // Detect browser language on load
+            (function detectLang() {
+                const browserLang =
+                    navigator.language || navigator.userLanguage;
+                if (browserLang.startsWith("es")) {
+                    switchLang("es");
+                }
+            })();
+        </script>
+    </body>
 </html>
