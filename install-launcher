@@ -3,3 +3,4 @@ flatpak remote-add --if-not-exists --user flathub https://dl.flathub.org/repo/fl
 flatpak remote-add --user trinity https://github.com/Trinity-LA/Trinity-Launcher/releases/download/flatpak/com.trench.trinity.launcher.flatpakrepo
 flatpak install --user flathub org.kde.Platform//6.10 io.qt.qtwebengine.BaseApp//6.10 -y
 flatpak install --user com.trench.trinity.launcher -y
+flatpak run com.trench.trinity.launcher 
